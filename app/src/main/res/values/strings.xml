@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">LeCroissanteur</string>
+    <string name="appwidget_text">CROISSANT</string>
+    <string name="add_widget">Add widget</string>
+</resources>
