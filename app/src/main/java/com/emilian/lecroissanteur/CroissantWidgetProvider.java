@@ -5,51 +5,37 @@ import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.AssetFileDescriptor;
-import android.content.res.AssetManager;
-import android.media.AudioManager;
 import android.media.MediaPlayer;
-import android.media.SoundPool;
 import android.util.Log;
 import android.widget.RemoteViews;
-import android.widget.Toast;
-
-import static android.content.Context.AUDIO_SERVICE;
 
 /**
  * Implementation of App Widget functionality.
  */
-public class CroissantWidgetProvider extends AppWidgetProvider {
+public class CroissantWidgetProvider extends AppWidgetProvider implements MediaPlayer.OnErrorListener {
 
-    public static final String ON_RECEIVE_TAG = "RECEIVER_LOG";
-    public static final String ON_UPDATE_TAG = "UPDATE_LOG";
-    public static final String ON_ENABLED_TAG = "ENABLED_LOG";
-    public static final String ON_DISABLED_TAG = "DISABLED_TAG";
-    public static final String WIDGET_CLICK_SOUND = "com.emilian.action.CROISSANT_CLICK_SOUND";
+    public static final String WIDGET_PROVIDER_TAG = "WID_PROVIDER_LOG";
+    public static final String WIDGET_TAP_ACTION = "com.emilian.action.CROISSANT_WIDGET_TAP";
     static MediaPlayer croissantMP;
 
     @Override
     public void onReceive(Context context, Intent intent) {
         super.onReceive(context, intent);
-        Log.d(ON_RECEIVE_TAG, "entered onReceive, intent action is: " + intent.getAction());
+        Log.d(WIDGET_PROVIDER_TAG, "entered onReceive, intent action is: " + intent.getAction());
 
-        if(WIDGET_CLICK_SOUND.equals(intent.getAction())){
-            //croissantMP = MediaPlayer.create(context, R.raw.croisssssant);
-
+        if(WIDGET_TAP_ACTION.equals(intent.getAction())){
             try {
-                if (croissantMP.isPlaying()) {
+                if (croissantMP == null) {
+                    // perhaps some time has passed and the media player has been "detached" from
+                    // widget; reinitialise the media player object, ready to play the sound again
+                    croissantMP = MediaPlayer.create(context, R.raw.croisssssant);
+                    croissantMP.setOnErrorListener(this);
+                }
+                else if (croissantMP.isPlaying()) {
                     croissantMP.pause();
                     croissantMP.seekTo(0);
                 }
-                // Previous approach which loaded the sound file into the MediaPlayer object
-                // each time the user tapped on the widget, leading to memory release issues
-                /*if (croissantMP.isPlaying()) {
-                    croissantMP.stop();
-                    croissantMP.release();
-                    croissantMP = MediaPlayer.create(context, R.raw.croisssssant);
-                }*/
                 croissantMP.start();
-                Log.d(ON_RECEIVE_TAG, "audio file started playing");
             } catch(Exception e) {
                 e.printStackTrace();
             }
@@ -58,10 +44,10 @@ public class CroissantWidgetProvider extends AppWidgetProvider {
 
     static void updateAppWidget(Context context, AppWidgetManager appWidgetManager,
                                 int appWidgetId) {
-        Log.d(ON_UPDATE_TAG, "Entered updateAppWidget function");
+        Log.d(WIDGET_PROVIDER_TAG, "Entered updateAppWidget function");
 
         Intent playCroissantSoundIntent = new Intent(context, CroissantWidgetProvider.class);
-        playCroissantSoundIntent.setAction(WIDGET_CLICK_SOUND);
+        playCroissantSoundIntent.setAction(WIDGET_TAP_ACTION);
         playCroissantSoundIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
         PendingIntent soundPendingIntent = PendingIntent.getBroadcast(
                 context, appWidgetId,
@@ -87,25 +73,34 @@ public class CroissantWidgetProvider extends AppWidgetProvider {
     @Override
     public void onEnabled(Context context) {
         // Enter relevant functionality for when the first widget is created
-        Log.d(ON_ENABLED_TAG, "Entered onEnabled");
+        Log.d(WIDGET_PROVIDER_TAG, "Entered onEnabled");
 
         // Create MediaPlayer object here only once, when the widget is
         // created and load the sound file into it only once
         if(croissantMP == null) {
             croissantMP = MediaPlayer.create(context, R.raw.croisssssant);
+            croissantMP.setOnErrorListener(this);
         }
     }
 
     @Override
     public void onDisabled(Context context) {
         // Enter relevant functionality for when the last widget is disabled
-        Log.d(ON_DISABLED_TAG, "Entered onDisabled");
+        Log.d(WIDGET_PROVIDER_TAG, "Entered onDisabled");
 
         if(croissantMP != null) {
-            croissantMP.reset();
+            croissantMP.stop();
             croissantMP.release();
             croissantMP = null;
         }
+    }
+
+    @Override
+    public boolean onError(MediaPlayer mediaPlayer, int i, int i1) {
+        Log.e(WIDGET_PROVIDER_TAG, "entered onError");
+        Log.e(WIDGET_PROVIDER_TAG, Integer.toString(i));
+        Log.e(WIDGET_PROVIDER_TAG, Integer.toString(i1));
+        return false;
     }
 }
 

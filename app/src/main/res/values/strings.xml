@@ -2,4 +2,11 @@
     <string name="app_name">LeCroissanteur</string>
     <string name="appwidget_text">CROISSANT</string>
     <string name="add_widget">Add widget</string>
+
+    <string name="dialog_default_text">This is a default dialog box</string>
+    <string name="dialog_default_positive">OK</string>
+    <string name="dialog_default_negative">Cancel</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
