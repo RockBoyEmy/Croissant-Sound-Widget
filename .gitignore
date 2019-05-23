@@ -2,8 +2,7 @@
 .DS_Store
 
 #Screenshots for GPlay
-Screenshot*
-APP_LOGO*
+appScreens/
 
 # Built application files
 *.apk
